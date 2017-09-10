@@ -20,6 +20,85 @@
 import normalizeValue from './normalizeValue';
 import processColor from '../../modules/processColor';
 
+/********************** wyn add for resolve flex **********************************/
+
+// prefix 2009 spec
+let flexboxProperties = {
+  flex: 'WebkitBoxFlex',
+  order: 'WebkitBoxOrdinalGroup',
+  // https://github.com/postcss/autoprefixer/blob/master/lib/hacks/flex-direction.coffee
+  flexDirection: 'WebkitBoxOrient',
+  // https://github.com/postcss/autoprefixer/blob/master/lib/hacks/align-items.coffee
+  alignItems: 'WebkitBoxAlign',
+  // https://github.com/postcss/autoprefixer/blob/master/lib/hacks/justify-content.coffee
+  justifyContent: 'WebkitBoxPack',
+  flexWrap: null,
+  alignSelf: null,
+};
+
+let oldFlexboxValues = {
+  'flex-end': 'end',
+  'flex-start': 'start',
+  'space-between': 'justify',
+  'space-around': 'distribute',
+};
+
+let builtinStyle = document.createElement('div').style;
+let flexboxSpec;
+if ('alignSelf' in builtinStyle) flexboxSpec = 'final';
+// else if ('webkitAlignSelf' in builtinStyle) flexboxSpec = 'finalVendor';
+else flexboxSpec = '2009';
+
+// FIXME: UCBrowser is cheat
+let isUCBrowser = /UCBrowser/i.test(navigator.userAgent);
+// only U3 core need 2009 spec, and only this way can detect another core
+let notU3 = /UCBS/i.test(navigator.userAgent);
+if (isUCBrowser && !notU3) flexboxSpec = '2009';
+
+const isIE = /Trident/i.test(navigator.userAgent);
+
+// TODO: cache the result
+const prefixOldFlexbox = (property, value, result) => {
+
+  if (flexboxSpec === '2009') {
+    let oldValue = oldFlexboxValues[value] || value;
+    let oldProperty = flexboxProperties[property] || property;
+    if (oldProperty === 'WebkitBoxOrient') {
+      // boxOrient
+      if (value.indexOf('row') != -1) {
+        oldValue = 'horizontal';
+      } else {
+        oldValue = 'vertical';
+      }
+      // boxDirection
+      let dir = '';
+      if (value.indexOf('reverse') != -1) {
+        dir = 'reverse';
+      } else {
+        dir = 'normal';
+      }
+      result.WebkitBoxDirection = dir;
+    }
+    return result[oldProperty] = oldValue;
+
+  } 
+  /*else if (flexboxSpec === 'finalVendor') {
+    return result[getVendorPropertyName(property)] = value;
+
+  }*/ else {
+    return result[property] = value;
+
+  }
+}
+
+const defaultFlexExpansion = (style, result) => {
+  result.flexGrow = style.flex || 0;
+  result.flexShrink = style.flexShrink || 1;
+  result.flexBasis = style.flexBasis || 'auto';
+}
+
+/********************** wyn add for resolve end **********************************/
+
 const emptyObject = {};
 const styleShortFormProperties = {
   borderColor: ['borderTopColor', 'borderRightColor', 'borderBottomColor', 'borderLeftColor'],
@@ -170,20 +249,20 @@ const createReducer = (style, styleProps) => {
         break;
       }
 
-      case 'flex': {
-        if (value > 0) {
-          resolvedStyle.flexGrow = value;
-          resolvedStyle.flexShrink = 1;
-          resolvedStyle.flexBasis = '0%';
-        } else if (value === 0) {
-          resolvedStyle.flexGrow = 0;
-          resolvedStyle.flexShrink = 0;
-        } else if (value === -1) {
-          resolvedStyle.flexGrow = 0;
-          resolvedStyle.flexShrink = 1;
-        }
-        break;
-      }
+      // case 'flex': {
+      //   if (value > 0) {
+      //     resolvedStyle.flexGrow = value;
+      //     resolvedStyle.flexShrink = 1;
+      //     resolvedStyle.flexBasis = '0%';
+      //   } else if (value === 0) {
+      //     resolvedStyle.flexGrow = 0;
+      //     resolvedStyle.flexShrink = 0;
+      //   } else if (value === -1) {
+      //     resolvedStyle.flexGrow = 0;
+      //     resolvedStyle.flexShrink = 1;
+      //   }
+      //   break;
+      // }
 
       case 'fontFamily': {
         const isSystem = value === 'System';
@@ -224,23 +303,32 @@ const createReducer = (style, styleProps) => {
       }
 
       default: {
-        // normalize color values
-        let finalValue = value;
-        if (colorProps[prop]) {
-          finalValue = processColor(value);
-        }
-
-        const longFormProperties = styleShortFormProperties[prop];
-        if (longFormProperties) {
-          longFormProperties.forEach((longForm, i) => {
-            // the value of any longform property in the original styles takes
-            // precedence over the shortform's value
-            if (styleProps.indexOf(longForm) === -1) {
-              resolvedStyle[longForm] = finalValue;
-            }
-          });
+        const isFlexProp = flexboxProperties[prop];
+        if(isFlexProp){
+          prefixOldFlexbox(prop, value, resolvedStyle);
+          // https://roland.codes/blog/ie-flex-collapse-bug/
+          if (prop === 'flex' && isIE) {
+            defaultFlexExpansion(style, resolvedStyle);
+          }
         } else {
-          resolvedStyle[prop] = finalValue;
+          // normalize color values
+          let finalValue = value;
+          if (colorProps[prop]) {
+            finalValue = processColor(value);
+          }
+
+          const longFormProperties = styleShortFormProperties[prop];
+          if (longFormProperties) {
+            longFormProperties.forEach((longForm, i) => {
+              // the value of any longform property in the original styles takes
+              // precedence over the shortform's value
+              if (styleProps.indexOf(longForm) === -1) {
+                resolvedStyle[longForm] = finalValue;
+              }
+            });
+          } else {
+            resolvedStyle[prop] = finalValue;
+          }
         }
       }
     }
