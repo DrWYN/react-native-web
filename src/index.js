@@ -5,7 +5,7 @@ import {
   unmountComponentAtNode,
 
   // modules
-  createDOMElement,
+  createElement,
   NativeModules,
   processColor,
 
@@ -20,6 +20,7 @@ import {
   Easing,
   I18nManager,
   InteractionManager,
+  Keyboard,
   Linking,
   NetInfo,
   PanResponder,
@@ -34,6 +35,7 @@ import {
   Button,
   FlatList,
   Image,
+  KeyboardAvoidingView,
   ListView,
   Modal,
   Picker,
@@ -69,7 +71,7 @@ const ReactNative = {
   unmountComponentAtNode,
 
   // modules
-  createDOMElement,
+  createElement,
   NativeModules,
   processColor,
 
@@ -85,6 +87,7 @@ const ReactNative = {
   Easing,
   I18nManager,
   InteractionManager,
+  Keyboard,
   Linking,
   NetInfo,
   PanResponder,
@@ -99,6 +102,7 @@ const ReactNative = {
   Button,
   FlatList,
   Image,
+  KeyboardAvoidingView,
   ListView,
   Modal,
   Picker,

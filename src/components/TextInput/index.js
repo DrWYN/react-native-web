@@ -15,7 +15,7 @@ import applyNativeMethods from '../../modules/applyNativeMethods';
 import { canUseDOM } from 'fbjs/lib/ExecutionEnvironment';
 import { Component } from 'react';
 import ColorPropType from '../../propTypes/ColorPropType';
-import createDOMElement from '../../modules/createDOMElement';
+import createElement from '../../modules/createElement';
 import findNodeHandle from '../../modules/findNodeHandle';
 import StyleSheet from '../../apis/StyleSheet';
 import StyleSheetPropType from '../../propTypes/StyleSheetPropType';
@@ -265,7 +265,7 @@ class TextInput extends Component {
       otherProps.type = type;
     }
 
-    return createDOMElement(component, otherProps);
+    return createElement(component, otherProps);
   }
 
   _handleBlur = e => {
@@ -301,6 +301,9 @@ class TextInput extends Component {
   };
 
   _handleKeyDown = e => {
+    // prevent key events bubbling (see #612)
+    e.stopPropagation();
+
     // Backspace, Tab, and Cmd+Enter only fire 'keydown' DOM events
     if (e.which === 8 || e.which === 9 || (e.which === 13 && e.metaKey)) {
       this._handleKeyPress(e);
@@ -336,7 +339,9 @@ class TextInput extends Component {
           if (e.shiftKey) {
             keyValue = String.fromCharCode(e.which).trim();
           } else {
-            keyValue = String.fromCharCode(e.which).toLowerCase().trim();
+            keyValue = String.fromCharCode(e.which)
+              .toLowerCase()
+              .trim();
           }
         }
       }

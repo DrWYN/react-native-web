@@ -18,6 +18,7 @@ import PropSecureTextEntry from './examples/PropSecureTextEntry';
 import PropSelectTextOnFocus from './examples/PropSelectTextOnFocus';
 import TextInputEvents from './examples/TextInputEvents';
 import TextInputRewrite, { TextInputRewriteInvalidCharacters } from './examples/Rewrite';
+import TouchableWrapper from './examples/TouchableWrapper';
 import React from 'react';
 import UIExplorer, {
   AppText,
@@ -30,7 +31,7 @@ import UIExplorer, {
   TextList
 } from '../../ui-explorer';
 
-const TextInputScreen = () =>
+const TextInputScreen = () => (
   <UIExplorer title="TextInput" url="1-components/TextInput">
     <Description>
       <AppText>
@@ -362,7 +363,15 @@ nativeEvent: { key: keyValue } }`}</Code>{' '}
           render: () => <TextInputRewriteInvalidCharacters />
         }}
       />
+
+      <DocItem
+        description="Wrapped in a TouchableWithoutFeedback"
+        example={{
+          render: () => <TouchableWrapper />
+        }}
+      />
     </Section>
-  </UIExplorer>;
+  </UIExplorer>
+);
 
 storiesOf('Components', module).add('TextInput', TextInputScreen);
