@@ -7,7 +7,7 @@ const getDistLocation = importName => {
     case 'AppRegistry':
     case 'AppState':
     case 'AsyncStorage':
-    case 'BackAndroid':
+    case 'BackHandler':
     case 'Clipboard':
     case 'Dimensions':
     case 'Easing':
@@ -69,10 +69,14 @@ const getDistLocation = importName => {
     // propTypes
     case 'ColorPropType':
     case 'EdgeInsetsPropType':
-    case 'PointPropType':
-    case 'TextPropTypes':
-    case 'ViewPropTypes': {
+    case 'PointPropType': {
       return `${root}/propTypes/${importName}`;
+    }
+    case 'TextPropTypes': {
+      return `${root}/components/Text/${importName}`;
+    }
+    case 'ViewPropTypes': {
+      return `${root}/components/View/${importName}`;
     }
 
     default:
@@ -102,7 +106,7 @@ module.exports = function({ types: t }) {
     visitor: {
       ImportDeclaration(path) {
         const { source, specifiers } = path.node;
-        if (source.value === 'react-native' && specifiers.length) {
+        if (source && source.value === 'react-native' && specifiers.length) {
           const imports = specifiers
             .map(specifier => {
               if (t.isImportSpecifier(specifier)) {
@@ -121,6 +125,35 @@ module.exports = function({ types: t }) {
             .filter(Boolean);
 
           path.replaceWithMultiple(imports);
+        }
+      },
+      ExportNamedDeclaration(path) {
+        const { source, specifiers } = path.node;
+        if (source && source.value === 'react-native' && specifiers.length) {
+          const exports = specifiers
+            .map(specifier => {
+              if (t.isExportSpecifier(specifier)) {
+                const exportName = specifier.exported.name;
+                const localName = specifier.local.name;
+                const distLocation = getDistLocation(localName);
+
+                if (distLocation) {
+                  return t.exportNamedDeclaration(
+                    null,
+                    [t.exportSpecifier(t.identifier('default'), t.identifier(exportName))],
+                    t.stringLiteral(distLocation)
+                  );
+                }
+                return t.exportNamedDeclaration(
+                  null,
+                  [specifier],
+                  t.stringLiteral('react-native-web')
+                );
+              }
+            })
+            .filter(Boolean);
+
+          path.replaceWithMultiple(exports);
         }
       },
       VariableDeclaration(path) {
