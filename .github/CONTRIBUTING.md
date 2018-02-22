@@ -17,13 +17,19 @@ Fork, then clone the repo:
 git clone https://github.com/your-username/react-native-web.git
 ```
 
-Install dependencies (requires [yarn](https://yarnpkg.com/en/docs/install):
+Install dependencies (requires [yarn](https://yarnpkg.com/en/docs/install)):
 
 ```
 yarn
 ```
 
 ## Automated tests
+
+To run the linter:
+
+```
+yarn lint
+```
 
 To run flow:
 
@@ -40,62 +46,57 @@ yarn jest
 …in watch mode:
 
 ```
-yarn jest:watch
+yarn jest --watch
 ```
 
-To run all automated tests:
+To run all these automated tests:
 
 ```
 yarn test
 ```
 
-## Visual tests
-
-To run the interactive storybook:
-
-```
-yarn docs:start
-```
-
-To generate a static build of the storybook:
-
-```
-yarn docs:build
-```
-
-To run the performance benchmarks in a browser (opening `./benchmarks/index.html`):
-
-```
-yarn benchmark
-```
-
 ## Compile and build
 
-To compile the source code to `dist`:
+To compile the `react-native-web` source code:
 
 ```
 yarn compile
 ```
 
-To create a UMD bundle of the library:
+…in watch mode:
 
 ```
-yarn build
+yarn compile --watch
 ```
 
-### Pre-commit
+## Website and visual tests
 
-To format and lint code before commit:
-
-```
-yarn precommit
-```
-
-To format and lint the entire project:
+To run the interactive storybook:
 
 ```
-yarn fmt
-yarn lint
+yarn website
+```
+
+When you're also making changes to the 'react-native-web' source files, run this command in another process:
+
+```
+yarn compile --watch
+```
+
+## Benchmarks
+
+To run the benchmarks locally:
+
+```
+yarn benchmarks
+open ./packages/benchmarks/dist/index.html
+```
+
+To develop against these benchmarks:
+
+```
+yarn compile --watch
+yarn benchmarks --watch
 ```
 
 ### New Features
@@ -106,13 +107,12 @@ that we won't want to accept.
 
 ## Pull requests
 
-**Before submitting a pull request,** please make sure the following is done:
+**Before submitting a pull request**, please make sure the following is done:
 
 1. Fork the repository and create your branch from `master`.
 2. If you've added code that should be tested, add tests!
 3. If you've changed APIs, update the documentation.
 4. Ensure the tests pass (`yarn test`).
-5. Lint and format your code (`yarn fmt && yarn lint`).
 
 You can now submit a pull request, referencing any issues it addresses.
 
@@ -123,3 +123,18 @@ After you have submitted your pull request, we'll try to get back to you as
 soon as possible. We may suggest some changes or improvements.
 
 Thank you for contributing!
+
+## Releases
+
+To commit, publish, and push a final version:
+
+```
+yarn release <version>
+```
+
+Release candidates or versions that you'd like to publish to npm, but do not
+want to produce a commit and push it to GitHub:
+
+```
+yarn release <version> --skip-git
+```
