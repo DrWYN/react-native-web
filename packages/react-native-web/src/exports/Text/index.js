@@ -5,7 +5,6 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @providesModule Text
  * @flow
  */
 
@@ -53,6 +52,7 @@ class Text extends Component<*> {
       selectionColor,
       suppressHighlighting,
       textBreakStrategy,
+      tvParallaxProperties,
       /* eslint-enable */
       ...otherProps
     } = this.props;
@@ -61,7 +61,7 @@ class Text extends Component<*> {
 
     if (onPress) {
       otherProps.accessible = true;
-      otherProps.onClick = onPress;
+      otherProps.onClick = this._createPressHandler(onPress);
       otherProps.onKeyDown = this._createEnterHandler(onPress);
     }
 
@@ -88,6 +88,13 @@ class Text extends Component<*> {
       }
     };
   }
+
+  _createPressHandler(fn) {
+    return e => {
+      e.stopPropagation();
+      fn && fn(e);
+    };
+  }
 }
 
 const styles = StyleSheet.create({
@@ -96,9 +103,12 @@ const styles = StyleSheet.create({
     boxSizing: 'border-box',
     color: 'inherit',
     display: 'inline',
-    font: 'inherit',
     fontFamily: 'System',
     fontSize: 14,
+    fontStyle: 'inherit',
+    fontVariant: ['inherit'],
+    fontWeight: 'inherit',
+    lineHeight: 'inherit',
     margin: 0,
     padding: 0,
     textDecorationLine: 'none',
@@ -109,7 +119,6 @@ const styles = StyleSheet.create({
     // inherit parent font styles
     fontFamily: 'inherit',
     fontSize: 'inherit',
-    fontVariant: ['inherit'],
     whiteSpace: 'inherit'
   },
   notSelectable: {

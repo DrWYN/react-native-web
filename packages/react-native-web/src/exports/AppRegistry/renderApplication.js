@@ -20,28 +20,37 @@ const renderFn = process.env.NODE_ENV !== 'production' ? render : hydrate;
 export default function renderApplication<Props: Object>(
   RootComponent: ComponentType<Props>,
   initialProps: Props,
-  rootTag: any
+  rootTag: any,
+  WrapperComponent?: ?ComponentType<*>,
+  callback?: () => void
 ) {
   invariant(rootTag, 'Expect to have a valid rootTag, instead got ', rootTag);
 
   renderFn(
-    <AppContainer rootTag={rootTag}>
+    <AppContainer WrapperComponent={WrapperComponent} rootTag={rootTag}>
       <RootComponent {...initialProps} />
     </AppContainer>,
-    rootTag
+    rootTag,
+    callback
   );
 }
 
-export function getApplication(RootComponent: ComponentType<Object>, initialProps: Object): Object {
+export function getApplication(
+  RootComponent: ComponentType<Object>,
+  initialProps: Object,
+  WrapperComponent?: ?ComponentType<*>
+): Object {
   const element = (
-    <AppContainer rootTag={{}}>
+    <AppContainer WrapperComponent={WrapperComponent} rootTag={{}}>
       <RootComponent {...initialProps} />
     </AppContainer>
   );
   // Don't escape CSS text
-  const getStyleElement = () => {
+  const getStyleElement = props => {
     const sheet = styleResolver.getStyleSheet();
-    return <style dangerouslySetInnerHTML={{ __html: sheet.textContent }} id={sheet.id} />;
+    return (
+      <style {...props} dangerouslySetInnerHTML={{ __html: sheet.textContent }} id={sheet.id} />
+    );
   };
   return { element, getStyleElement };
 }

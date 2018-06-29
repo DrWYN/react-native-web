@@ -5,7 +5,6 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @providesModule Picker
  * @flow
  */
 
@@ -23,7 +22,7 @@ import { arrayOf, bool, func, number, oneOfType, string } from 'prop-types';
 const pickerStyleType = StyleSheetPropType(PickerStylePropTypes);
 
 type Props = {
-  children?: Array<typeof PickerItem>,
+  children?: PickerItem | Array<typeof PickerItem>,
   enabled?: boolean,
   onValueChange?: Function,
   selectedValue?: number | string,
@@ -37,7 +36,7 @@ type Props = {
 
 class Picker extends Component<Props> {
   static propTypes = {
-    children: arrayOf(PickerItemPropType),
+    children: oneOfType([PickerItemPropType, arrayOf(PickerItemPropType)]),
     enabled: bool,
     onValueChange: func,
     selectedValue: oneOfType([number, string]),
@@ -82,7 +81,7 @@ class Picker extends Component<Props> {
 
 const styles = StyleSheet.create({
   initial: {
-    fontFamily: 'inherit',
+    fontFamily: 'System',
     fontSize: 'inherit',
     margin: 0
   }

@@ -5,7 +5,6 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @providesModule Clipboard
  * @flow
  */
 
@@ -28,8 +27,9 @@ export default class Clipboard {
       // add the text to a hidden node
       const node = document.createElement('span');
       node.textContent = text;
-      node.style.position = 'absolute';
       node.style.opacity = '0';
+      node.style.position = 'absolute';
+      node.style.whiteSpace = 'pre-wrap';
       body.appendChild(node);
 
       // select the text

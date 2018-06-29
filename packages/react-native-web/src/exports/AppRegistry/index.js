@@ -5,7 +5,6 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @providesModule AppRegistry
  * @flow
  */
 
@@ -18,6 +17,15 @@ const emptyObject = {};
 const runnables = {};
 
 export type ComponentProvider = () => ComponentType<any>;
+export type ComponentProviderInstrumentationHook = (
+  component: ComponentProvider
+) => ComponentType<any>;
+export type WrapperComponentProvider = any => ComponentType<*>;
+
+let componentProviderInstrumentationHook: ComponentProviderInstrumentationHook = (
+  component: ComponentProvider
+) => component();
+let wrapperComponentProvider: ?WrapperComponentProvider;
 
 export type AppConfig = {
   appKey: string,
@@ -44,12 +52,22 @@ export default class AppRegistry {
     return runnables[appKey].getApplication(appParameters);
   }
 
-  static registerComponent(appKey: string, getComponentFunc: ComponentProvider): string {
+  static registerComponent(appKey: string, componentProvider: ComponentProvider): string {
     runnables[appKey] = {
-      getApplication: ({ initialProps } = emptyObject) =>
-        getApplication(getComponentFunc(), initialProps),
-      run: ({ initialProps = emptyObject, rootTag }) =>
-        renderApplication(getComponentFunc(), initialProps, rootTag)
+      getApplication: appParameters =>
+        getApplication(
+          componentProviderInstrumentationHook(componentProvider),
+          appParameters ? appParameters.initialProps : emptyObject,
+          wrapperComponentProvider && wrapperComponentProvider(appParameters)
+        ),
+      run: appParameters =>
+        renderApplication(
+          componentProviderInstrumentationHook(componentProvider),
+          appParameters.initialProps || emptyObject,
+          appParameters.rootTag,
+          wrapperComponentProvider && wrapperComponentProvider(appParameters),
+          appParameters.callback
+        )
     };
     return appKey;
   }
@@ -71,16 +89,18 @@ export default class AppRegistry {
     return appKey;
   }
 
-  static runApplication(appKey: string, appParameters?: Object): void {
+  static runApplication(appKey: string, appParameters: Object): void {
     const isDevelopment = process.env.NODE_ENV !== 'production';
-    const params = { ...appParameters };
-    params.rootTag = `#${params.rootTag.id}`;
+    if (isDevelopment) {
+      const params = { ...appParameters };
+      params.rootTag = `#${params.rootTag.id}`;
 
-    console.log(
-      `Running application "${appKey}" with appParams: ${JSON.stringify(params)}. ` +
-        `development-level warnings are ${isDevelopment ? 'ON' : 'OFF'}, ` +
-        `performance optimizations are ${isDevelopment ? 'OFF' : 'ON'}`
-    );
+      console.log(
+        `Running application "${appKey}" with appParams: ${JSON.stringify(params)}.\n` +
+          `Development-level warnings: ${isDevelopment ? 'ON' : 'OFF'}.\n` +
+          `Performance optimizations: ${isDevelopment ? 'OFF' : 'ON'}.`
+      );
+    }
 
     invariant(
       runnables[appKey] && runnables[appKey].run,
@@ -89,6 +109,14 @@ export default class AppRegistry {
     );
 
     runnables[appKey].run(appParameters);
+  }
+
+  static setComponentProviderInstrumentationHook(hook: ComponentProviderInstrumentationHook) {
+    componentProviderInstrumentationHook = hook;
+  }
+
+  static setWrapperComponentProvider(provider: WrapperComponentProvider) {
+    wrapperComponentProvider = provider;
   }
 
   static unmountApplicationComponentAtRootTag(rootTag: Object) {

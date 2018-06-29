@@ -4,13 +4,10 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @providesModule UIManager
  * @noflow
  */
 
-import requestAnimationFrame from 'fbjs/lib/requestAnimationFrame';
-import setImmediate from 'fbjs/lib/setImmediate';
-import setValueForStyles from '../../vendor/setValueForStyles';
+import setValueForStyles from '../../vendor/react-dom/setValueForStyles';
 
 const getRect = node => {
   const height = node.offsetHeight;
@@ -27,38 +24,17 @@ const getRect = node => {
   return { height, left, top, width };
 };
 
-let hasRequestedAnimationFrame = false;
-const measureLayoutQueue = [];
-
-const processLayoutQueue = () => {
-  measureLayoutQueue.splice(0, 250).forEach(item => {
-    const [node, relativeToNativeNode, callback] = item;
-    const relativeNode = relativeToNativeNode || (node && node.parentNode);
-
-    if (node && relativeNode) {
+const measureLayout = (node, relativeToNativeNode, callback) => {
+  const relativeNode = relativeToNativeNode || (node && node.parentNode);
+  if (node && relativeNode) {
+    setTimeout(() => {
       const relativeRect = getRect(relativeNode);
       const { height, left, top, width } = getRect(node);
       const x = left - relativeRect.left;
       const y = top - relativeRect.top;
       callback(x, y, width, height, left, top);
-    }
-  });
-
-  if (measureLayoutQueue.length > 0) {
-    setImmediate(processLayoutQueue);
+    }, 0);
   }
-};
-
-const measureLayout = (node, relativeToNativeNode, callback) => {
-  if (!hasRequestedAnimationFrame) {
-    requestAnimationFrame(() => {
-      hasRequestedAnimationFrame = false;
-      processLayoutQueue();
-    });
-  }
-
-  hasRequestedAnimationFrame = true;
-  measureLayoutQueue.push([node, relativeToNativeNode, callback]);
 };
 
 const UIManager = {
@@ -79,12 +55,12 @@ const UIManager = {
   },
 
   measureInWindow(node, callback) {
-    requestAnimationFrame(() => {
-      if (node) {
+    if (node) {
+      setTimeout(() => {
         const { height, left, top, width } = getRect(node);
         callback(left, top, width, height);
-      }
-    });
+      }, 0);
+    }
   },
 
   measureLayout(node, relativeToNativeNode, onFail, onSuccess) {
@@ -117,7 +93,14 @@ const UIManager = {
           node.setAttribute(prop, value);
       }
     }
-  }
+  },
+
+  configureNextLayoutAnimation(config, onAnimationDidEnd) {
+    onAnimationDidEnd();
+  },
+
+  // mocks
+  setLayoutAnimationEnabledExperimental() {}
 };
 
 export default UIManager;

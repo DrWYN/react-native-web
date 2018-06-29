@@ -5,14 +5,13 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @providesModule ViewPropTypes
  * @flow
  */
 
 import EdgeInsetsPropType, { type EdgeInsetsProp } from '../EdgeInsetsPropType';
 import StyleSheetPropType from '../../modules/StyleSheetPropType';
 import ViewStylePropTypes from './ViewStylePropTypes';
-import { any, array, bool, func, oneOf, oneOfType, string } from 'prop-types';
+import { any, array, bool, func, object, oneOf, oneOfType, string } from 'prop-types';
 
 const stylePropType = StyleSheetPropType(ViewStylePropTypes);
 
@@ -74,7 +73,8 @@ export type ViewProps = {
   onMagicTap?: Function,
   removeClippedSubviews?: boolean,
   renderToHardwareTextureAndroid?: boolean,
-  shouldRasterizeIOS?: boolean
+  shouldRasterizeIOS?: boolean,
+  tvParallaxProperties?: {}
 };
 
 const ViewPropTypes = {
@@ -122,7 +122,8 @@ const ViewPropTypes = {
   onMagicTap: func,
   removeClippedSubviews: bool,
   renderToHardwareTextureAndroid: bool,
-  shouldRasterizeIOS: bool
+  shouldRasterizeIOS: bool,
+  tvParallaxProperties: object
 };
 
 export default ViewPropTypes;

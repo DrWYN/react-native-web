@@ -5,7 +5,6 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @providesModule TextInput
  * @flow
  */
 
@@ -86,6 +85,7 @@ class TextInput extends Component<*> {
       'default',
       'email-address',
       'number-pad',
+      'numbers-and-punctuation',
       'numeric',
       'phone-pad',
       'search',
@@ -161,6 +161,9 @@ class TextInput extends Component<*> {
 
   componentDidMount() {
     setSelection(this._node, this.props.selection);
+    if (document.activeElement === this._node) {
+      TextInputState._currentlyFocusedNode = this._node;
+    }
   }
 
   componentDidUpdate() {
@@ -180,6 +183,7 @@ class TextInput extends Component<*> {
       blurOnSubmit,
       clearTextOnFocus,
       onChangeText,
+      onLayout,
       onSelectionChange,
       onSubmitEditing,
       selection,
@@ -263,7 +267,7 @@ class TextInput extends Component<*> {
 
   _handleBlur = e => {
     const { onBlur } = this.props;
-    TextInputState.blurTextInput(this._node);
+    TextInputState._currentlyFocusedNode = null;
     if (onBlur) {
       onBlur(e);
     }
@@ -283,7 +287,7 @@ class TextInput extends Component<*> {
   _handleFocus = e => {
     const { clearTextOnFocus, onFocus, selectTextOnFocus } = this.props;
     const node = this._node;
-    TextInputState.focusTextInput(this._node);
+    TextInputState._currentlyFocusedNode = this._node;
     if (onFocus) {
       onFocus(e);
     }
@@ -406,7 +410,7 @@ class TextInput extends Component<*> {
 const styles = StyleSheet.create({
   initial: {
     MozAppearance: 'textfield',
-    appearance: 'none',
+    WebkitAppearance: 'none',
     backgroundColor: 'transparent',
     borderColor: 'black',
     borderRadius: 0,
